@@ -1,9 +1,18 @@
 # Collect_Japanese_Text
 The Python script is designed to automatically collect all Japanese text from a series of JSON files located in a specified folder.
 
-Save this modified Python script to a file, e.g., collect_japanese_text.py.
-Open a terminal.
-Navigate to the folder where collect_japanese_text.py is saved.
-Run the script with the following command:
-python collect_japanese_text.py "path_to_folder"
-This should generate all_japanese_text.txt in the specified directory, just like before, but now you can easily run it on any folder. Would you like to know more about any part of this?
+Requirements
+Python 3.x: Make sure Python 3.x is installed on your system. You can download it from the official website.
+MeCab Library: This is used for parsing Japanese text.
+"pip install mecab-python3"
+
+Step 2: Run the Script
+Open your command prompt or terminal.
+Navigate to the folder containing the Python script.
+Run the command:
+python collect_and_analyze_japanese_text.py "path_to_your_folder"
+Replace path_to_your_folder with the directory containing your JSON files.
+
+The collect_japanese_text function scans through all the JSON files in the specified directory and writes the Japanese text to a file named all_japanese_text.txt.
+
+The analyze_frequency function processes the collected text, breaks it down into individual words, and counts the frequency of each word. The frequency data is saved to a file named word_frequencies.txt.
