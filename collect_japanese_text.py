@@ -1,37 +1,43 @@
 import os
 import json
 import glob
-import MeCab
 from collections import Counter
+import MeCab
 import click
 
 def collect_japanese_text(directory_path):
-    mecab = MeCab.Tagger("-Owakati")
-    word_freq = Counter()
+    output_file_path = os.path.join(directory_path, "all_japanese_text.txt")
+    with open(output_file_path, "w", encoding="utf-8") as output_file:
+        for root, dirs, files in os.walk(directory_path):
+            if '_ocr' in root:
+                os.chdir(root)
+                for json_file in glob.glob("*.json"):
+                    with open(json_file, 'r', encoding='utf-8') as f:
+                        data = json.load(f)
+                    for block in data.get("blocks", []):
+                        for line in block.get("lines", []):
+                            output_file.write(line + "\n")
+    return output_file_path
 
-    # Create a single output file at the root directory
-    with open(os.path.join(directory_path, "all_japanese_text_combined.txt"), "w", encoding="utf-8") as output_combined_file:
-        for subdir, _, _ in os.walk(directory_path):
-            os.chdir(subdir)
-            for json_file in glob.glob("*.json"):
-                with open(json_file, 'r', encoding='utf-8') as f:
-                    data = json.load(f)
-                for block in data.get("blocks", []):
-                    for line in block.get("lines", []):
-                        output_combined_file.write(line + "\n")
-                        parsed_text = mecab.parse(line).split()
-                        word_freq.update(parsed_text)
-                        
-    # Write the frequency data to a file
-    with open(os.path.join(directory_path, "word_frequency_combined.txt"), "w", encoding="utf-8") as freq_file:
-        for word, freq in word_freq.most_common():
-            freq_file.write(f"{word}: {freq}\n")
+def generate_frequency_list(directory, output_file_path):
+    freq_file_path = os.path.join(directory, "frequency_list.txt")
+    mecab = MeCab.Tagger("-Owakati")
+    counter = Counter()
+    with open(output_file_path, "r", encoding="utf-8") as input_file:
+        for line in input_file:
+            words = mecab.parse(line).split()
+            counter.update(words)
+    with open(freq_file_path, "w", encoding="utf-8") as freq_file:
+        for word, count in counter.most_common():
+            freq_file.write(f"{word}: {count}\n")
 
 @click.command()
 @click.argument('directory', type=click.Path(exists=True))
 def main(directory):
-    """Collect all Japanese text from JSON files in a specified directory."""
-    collect_japanese_text(directory)
+    """Collect all Japanese text from JSON files in a specified directory and its subdirectories."""
+    output_file_path = collect_japanese_text(directory)
+    generate_frequency_list(directory, output_file_path)
 
 if __name__ == '__main__':
     main()
+
